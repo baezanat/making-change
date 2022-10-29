@@ -1,0 +1,78 @@
+# Making change
+
+## Coins
+
+```elixir
+defmodule Coins do
+  @spec change(pos_integer, list) :: list(list(tuple))
+  def change(amount, values)
+  def change(amount, []) when amount > 0, do: []
+  def change(_amount, []), do: [[]]
+
+  def change(amount, [value | values]) do
+    max_count = div(amount, value)
+
+    for count <- max_count..0,
+        rem = amount - count * value,
+        solution = [{value, count}],
+        rem_solutions_list = change(rem, values),
+        rem_solution <- rem_solutions_list do
+      if count == 0 do
+        rem_solution
+      else
+        rem_solution ++ solution
+      end
+    end
+  end
+end
+```
+
+## Overview
+
+This module implements the change function which takes an amount and a list of coin values, and returns all the coin combinations that sum up to the given value. The return value is a list of lists, where each inner list is a combination of {value, count} tuples.
+
+```elixir
+ExUnit.start(auto_run: false)
+
+defmodule CoinsTest do
+  use ExUnit.Case, async: false
+
+  test "zero amount" do
+    assert Coins.change(0, [10, 5, 2, 1]) == [[]]
+  end
+
+  test "no values" do
+    assert Coins.change(10, []) == []
+  end
+
+  test "one value, same as amount" do
+    assert Coins.change(2, [2]) == [[{2, 1}]]
+  end
+
+  test "one value, divisor of amount" do
+    assert Coins.change(4, [2]) == [[{2, 2}]]
+  end
+
+  test "one value, not a divisor of amount" do
+    assert Coins.change(3, [2]) == []
+  end
+
+  test "one value, larger than amount" do
+    assert Coins.change(3, [4]) == []
+  end
+
+  test "multiple values, larger than amount" do
+    assert Coins.change(3, [5, 4]) == []
+  end
+
+  test "multiple values, one is a divisor of amount" do
+    assert Coins.change(5, [6, 5]) == [[{5, 1}]]
+  end
+
+  test "multiple values, some smaller than amount" do
+    assert Coins.change(3, [5, 2, 1]) == [[{1, 1}, {2, 1}], [{1, 3}]]
+  end
+end
+
+ExUnit.run()
+```
